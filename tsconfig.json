@@ -6,6 +6,30 @@
     "strict": true,
     // if using webpack 2+ or rollup, to leverage tree shaking:
     "module": "es2015",
-    "moduleResolution": "node"
-  }
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "plugins": [
+      {
+        "name": "ts-vue-plugin"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.d.ts",
+      "src/**/*.tsx",
+      "src/**/*.vue",
+      "tests/**/*.ts",
+      "tests/**/*.d.ts",
+      "tests/**/*.tsx"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
 }

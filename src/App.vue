@@ -5,7 +5,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Rxjs from './components/Rxjs.vue'
 
 export default {

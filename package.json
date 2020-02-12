@@ -11,17 +11,23 @@
     "core-js": "^3.4.4",
     "rxjs": "^6.5.4",
     "rxjs-compat": "^6.5.4",
+    "ts-vue-plugin": "^0.1.2",
     "vue": "^2.6.10",
     "vue-rx": "^6.2.0",
     "vue-typescript": "^0.7.0"
   },
   "devDependencies": {
+    "@types/webpack-env": "^1.14.1",
     "@vue/cli-plugin-babel": "^4.1.0",
+    "@vue/cli-plugin-typescript": "^4.0.5",
     "@vue/cli-plugin-eslint": "^4.1.0",
     "@vue/cli-service": "^4.1.0",
     "babel-eslint": "^10.0.3",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.5",
+    "typings": "^2.1.1",
     "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {
