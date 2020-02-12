@@ -1,5 +1,5 @@
 {
-  "name": "rxjs",
+  "name": "rxjstest",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,11 @@
   },
   "dependencies": {
     "core-js": "^3.4.4",
-    "vue": "^2.6.10"
+    "rxjs": "^6.5.4",
+    "rxjs-compat": "^6.5.4",
+    "vue": "^2.6.10",
+    "vue-rx": "^6.2.0",
+    "vue-typescript": "^0.7.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.1.0",
