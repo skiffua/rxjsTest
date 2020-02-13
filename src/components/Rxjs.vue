@@ -1,6 +1,7 @@
 <script lang="ts">
     import Vue from 'vue';
     import { Observable, Observer } from "rxjs";
+    import { map } from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
     interface observeData {
@@ -86,6 +87,27 @@
                         console.log(v);
                     }
                 );
+            },
+
+            testOperators () {
+                let numbers = [1, 5, 10];
+                this.observe = numbers;
+                // deprecated
+                let source = new Observable(observer => {
+
+                    for (let n of numbers) {
+                        observer.next(n)
+                    }
+
+                    observer.complete()
+                }).pipe(map(v => v*2));
+
+                source.subscribe(
+                    v => {
+                        // eslint-disable-next-line no-console
+                        console.log(v);
+                    }
+                );
             }
         }
     })
@@ -104,6 +126,7 @@
         <button type="button" @click="initObservableClass">Create observable with class</button>
         <button type="button" @click="initObservableFunctions">Create observable with functions</button>
         <button type="button" @click="initObservableWithCreate">Create observable with create method</button>
+        <button type="button" @click="testOperators">Using operators</button>
 
     </div>
 </template>
