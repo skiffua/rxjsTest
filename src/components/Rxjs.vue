@@ -1,8 +1,10 @@
 <script lang="ts">
     import Vue from 'vue';
-    import { Observable, Observer } from "rxjs";
-    import { map } from 'rxjs/operators';
+    import { Observable, Observer, fromEvent } from "rxjs";
+    import { map, delay  } from 'rxjs/operators';
     import "rxjs/add/observable/from";
+
+    // import
 
     interface observeData {
         observe: number[] | null;
@@ -19,7 +21,6 @@
         },
 
         created() {
-
         },
 
         computed: {
@@ -106,7 +107,39 @@
                     v => {
                         // eslint-disable-next-line no-console
                         console.log(v);
+                        this.observeActiveValue += ' ' + v;
                     }
+                );
+            },
+
+            onCircle() {
+                let circle = this.$refs['circle'];
+                // eslint-disable-next-line no-console
+                console.log(circle);
+                let source = fromEvent(document, 'mousemove')
+                    .pipe(map((e: MouseEvent) => {
+                        return {
+                            x: e.clientX,
+                            y: e.clientY
+                        }
+                    }),
+                    delay(300)
+                    );
+
+                function onNext(value) {
+                    // eslint-disable-next-line no-console
+                    console.log(value);
+                    circle.style.backgroundColor = 'green';
+                    circle.style.left = value.x - 10 + 'px';
+                    circle.style.top = value.y -10 + 'px';
+                }
+
+                source.subscribe(
+                    onNext,
+                    // v => {
+                    //     // eslint-disable-next-line no-console
+                    //     console.log(v);
+                    // }
                 );
             }
         }
@@ -114,7 +147,9 @@
 </script>
 
 <template>
-    <div>
+    <div id="root">
+        <div ref="circle" id="circle"></div>
+
         <label>Observer
             <input class="text" type="text" :value="observe">
         </label>
@@ -127,11 +162,23 @@
         <button type="button" @click="initObservableFunctions">Create observable with functions</button>
         <button type="button" @click="initObservableWithCreate">Create observable with create method</button>
         <button type="button" @click="testOperators">Using operators</button>
+        <button type="button" @click="onCircle">Circle run</button>
 
     </div>
 </template>
 
 
 <style scoped>
+    #root {
+        /*position: relative;*/
+    }
+
+    #circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: red;
+        position: absolute;
+    }
 
 </style>
