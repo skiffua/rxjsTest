@@ -2,7 +2,7 @@
     import Vue from 'vue';
     import axios from 'axios';
     import { Observable, Observer, fromEvent } from "rxjs";
-    import { map, delay, mergeMap  } from 'rxjs/operators';
+    import { map, scan, takeWhile, delay, mergeMap, retryWhen } from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
     // import
@@ -30,8 +30,10 @@
             let click: Observable<Event> = fromEvent(requestButton, 'click');
 
             click.pipe(mergeMap(
-                () => this.load('movies.json'),
-            ))
+                () => this.load('Tmovies.json'),
+            ),
+
+            )
                 .subscribe(
                     (val2, numb) => {
                         // eslint-disable-next-line no-console
@@ -178,7 +180,24 @@
                             observe.next(response.data);
                             observe.complete();
                         })
-                })
+                    .catch(() => {observe.error('erora')})
+                }).pipe(
+                    retryWhen(this.retryStrategy({attemts: 3, delay: 1500}))
+                )
+            },
+
+            retryStrategy({ attemts = 3, delay2 = 1500 }) {
+                return function(errors) {
+
+                    return errors
+                        .pipe(
+                        scan((acc: number) => {
+                            return acc + 1;
+                        }, 0),
+                        takeWhile(acc => acc < attemts),
+                        delay(delay2)
+                        )
+                }
             },
 
             renderMovies(movies: Array) {
