@@ -1,14 +1,15 @@
 <script lang="ts">
     import Vue from 'vue';
+    import axios from 'axios';
     import { Observable, Observer, fromEvent } from "rxjs";
-    import { map, delay  } from 'rxjs/operators';
+    import { map, delay, mergeMap  } from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
     // import
 
     interface observeData {
         observe: number[] | null;
-        observeActiveValue: number | null
+        observeActiveValue: number | string | null
     }
 
     export default Vue.extend({
@@ -23,6 +24,23 @@
         created() {
         },
 
+        mounted() {
+            let requestButton: any = this.$refs['requestTest'];
+
+            let click: Observable<Event> = fromEvent(requestButton, 'click');
+
+            click.pipe(mergeMap(
+                () => this.load('movies.json'),
+            ))
+                .subscribe(
+                    (val2, numb) => {
+                        // eslint-disable-next-line no-console
+                        console.log(numb);
+                        return this.renderMovies(val2)
+                    }
+            )
+        },
+
         computed: {
         },
 
@@ -32,7 +50,7 @@
                 this.observe = numbers;
                 let source = Observable.from(numbers);
 
-                class MyObserver implements Observer {
+                class MyObserver implements Observer<any> {
                     activeValue: number | null;
                     constructor() {
                         this.activeValue = null;
@@ -73,7 +91,7 @@
                 let numbers = [1, 5, 10];
                 this.observe = numbers;
                 // deprecated
-                let source = Observable.create(observer => {
+                let source = Observable.create((observer: any) => {
 
                     for (let n of numbers) {
                         observer.next(n)
@@ -83,7 +101,7 @@
                 });
 
                 source.subscribe(
-                    v => {
+                    (v: any) => {
                         // eslint-disable-next-line no-console
                         console.log(v);
                     }
@@ -101,10 +119,10 @@
                     }
 
                     observer.complete()
-                }).pipe(map(v => v*2));
+                }).pipe(map((v: any) => v*2));
 
                 source.subscribe(
-                    v => {
+                    (v: any) => {
                         // eslint-disable-next-line no-console
                         console.log(v);
                         this.observeActiveValue += ' ' + v;
@@ -113,11 +131,11 @@
             },
 
             onCircle() {
-                let circle = this.$refs['circle'];
+                let circle: any = this.$refs['circle'];
                 // eslint-disable-next-line no-console
                 console.log(circle);
-                let source = fromEvent(document, 'mousemove')
-                    .pipe(map((e: MouseEvent) => {
+                let source: Observable<any> = fromEvent(document, 'mousemove')
+                    .pipe(map((e: any) => {
                         return {
                             x: e.clientX,
                             y: e.clientY
@@ -126,7 +144,7 @@
                     delay(300)
                     );
 
-                function onNext(value) {
+                function onNext(value: {x: number; y: number}) {
                     // eslint-disable-next-line no-console
                     console.log(value);
                     circle.style.backgroundColor = 'green';
@@ -141,6 +159,38 @@
                     //     console.log(v);
                     // }
                 );
+            },
+
+            onGetData() {
+
+            },
+
+            load(url: string) {
+                return new Observable(async(observe) => {
+
+                    // eslint-disable-next-line no-console
+                    console.log('get');
+
+                    await axios
+                        .get(url)
+                        .then(response => {
+
+                            observe.next(response.data);
+                            observe.complete();
+                        })
+                })
+            },
+
+            renderMovies(movies: Array) {
+                // eslint-disable-next-line no-console
+                console.log(movies);
+                let output: any = this.$refs['movies'];
+
+                movies.forEach((m: { title: string }) => {
+                    let div = document.createElement('div');
+                    div.innerText = m.title;
+                    output.appendChild(div);
+                });
             }
         }
     })
@@ -157,12 +207,15 @@
             <input class="text" type="text" :value="observeActiveValue">
         </label>
         <br />
+        <div ref="movies"></div>
+        <br />
 
         <button type="button" @click="initObservableClass">Create observable with class</button>
         <button type="button" @click="initObservableFunctions">Create observable with functions</button>
         <button type="button" @click="initObservableWithCreate">Create observable with create method</button>
         <button type="button" @click="testOperators">Using operators</button>
         <button type="button" @click="onCircle">Circle run</button>
+        <button type="button" @click="onGetData" ref="requestTest">Get data</button>
 
     </div>
 </template>
