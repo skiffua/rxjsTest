@@ -1,8 +1,8 @@
 <script lang="ts">
     import Vue from 'vue';
     import axios from 'axios';
-    import { Observable, Observer, fromEvent } from "rxjs";
-    import { map, scan, takeWhile, delay, mergeMap, retryWhen } from 'rxjs/operators';
+    import { Observable, Observer, fromEvent, of } from "rxjs";
+    import {map, scan, takeWhile, delay, mergeMap, retryWhen, catchError} from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
     // import
@@ -29,16 +29,17 @@
 
             let click: Observable<Event> = fromEvent(requestButton, 'click');
 
-            click.pipe(mergeMap(
-                () => this.load('Tmovies.json'),
-            ),
-
+            click.pipe(mergeMap(() => this.load('Tmovies.json')),
             )
                 .subscribe(
                     (val2, numb) => {
                         // eslint-disable-next-line no-console
                         console.log(numb);
                         return this.renderMovies(val2)
+                    },
+                    (e) => {
+                        // eslint-disable-next-line no-console
+                        console.log('*****************',e);
                     }
             )
         },
@@ -178,11 +179,23 @@
                         .then(response => {
 
                             observe.next(response.data);
-                            observe.complete();
+                            observe.complete(() => {
+                                // eslint-disable-next-line no-console
+                                console.log('Complete');
+                            });
                         })
-                    .catch(() => {observe.error('erora')})
+                    .catch(() => {
+                        observe.error((e) => {
+                            // eslint-disable-next-line no-console
+                            console.log('*****************',e);
+                        });
+                        // eslint-disable-next-line no-console
+                        console.log('ERROR');
+                    })
                 }).pipe(
+                    catchError(val => of(`I caught: ${val}`)),
                     retryWhen(this.retryStrategy({attemts: 3, delay: 1500}))
+
                 )
             },
 
