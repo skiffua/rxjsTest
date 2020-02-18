@@ -1,7 +1,7 @@
 <script lang="ts">
     import Vue from 'vue';
     import axios from 'axios';
-    import { Observable, Observer, fromEvent, of } from "rxjs";
+    import { Observable, Observer, fromEvent, of, Subscriber } from "rxjs";
     import {map, scan, takeWhile, delay, mergeMap, retryWhen, catchError} from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
@@ -32,15 +32,18 @@
             click.pipe(mergeMap(() => this.load('Tmovies.json')),
             )
                 .subscribe(
-                    (val2, numb) => {
-                        // eslint-disable-next-line no-console
-                        console.log(numb);
-                        return this.renderMovies(val2)
+                    (val2) => {
+                        this.renderMovies(val2)
                     },
                     (e) => {
                         // eslint-disable-next-line no-console
                         console.log('*****************',e);
+                    },
+                    () => {
+                        // eslint-disable-next-line no-console
+                        console.log('complete');
                     }
+
             )
         },
 
@@ -169,7 +172,8 @@
             },
 
             load(url: string) {
-                return new Observable(async(observe) => {
+                return new Observable((observer: Subscriber<any>) => {
+                    (async () => {
 
                     // eslint-disable-next-line no-console
                     console.log('get');
@@ -177,43 +181,39 @@
                     await axios
                         .get(url)
                         .then(response => {
-
-                            observe.next(response.data);
-                            observe.complete(() => {
-                                // eslint-disable-next-line no-console
-                                console.log('Complete');
-                            });
+                            observer.next(response.data);
+                            observer.complete();
                         })
                     .catch(() => {
-                        observe.error((e) => {
-                            // eslint-disable-next-line no-console
-                            console.log('*****************',e);
-                        });
                         // eslint-disable-next-line no-console
                         console.log('ERROR');
-                    })
-                }).pipe(
-                    catchError(val => of(`I caught: ${val}`)),
-                    retryWhen(this.retryStrategy({attemts: 3, delay: 1500}))
 
+                        observer.error( 'serve error');
+                    })
+                })().then(null, observer.error) })
+                    .pipe(
+                    retryWhen(this.retryStrategy({attemts: 3, delay: 1500})),
+
+                    // needs to be careFull!!!!
+                    catchError(val => of(`I caught: ${val}`))
                 )
             },
 
             retryStrategy({ attemts = 3, delay2 = 1500 }) {
-                return function(errors) {
+                return function(errors: any) {
 
                     return errors
                         .pipe(
                         scan((acc: number) => {
                             return acc + 1;
                         }, 0),
-                        takeWhile(acc => acc < attemts),
+                        takeWhile((acc: number) => acc < attemts),
                         delay(delay2)
                         )
                 }
             },
 
-            renderMovies(movies: Array) {
+            renderMovies(movies: Array<{title: string}>) {
                 // eslint-disable-next-line no-console
                 console.log(movies);
                 let output: any = this.$refs['movies'];
