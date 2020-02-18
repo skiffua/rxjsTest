@@ -1,8 +1,8 @@
 <script lang="ts">
     import Vue from 'vue';
     import axios from 'axios';
-    import { Observable, Observer, fromEvent, of, Subscriber } from "rxjs";
-    import {map, scan, takeWhile, delay, mergeMap, retryWhen, catchError} from 'rxjs/operators';
+    import { Observable, Observer, fromEvent, Subscriber } from "rxjs";
+    import {map, scan, delay, mergeMap, retryWhen} from 'rxjs/operators';
     import "rxjs/add/observable/from";
 
     // import
@@ -184,9 +184,9 @@
                             observer.next(response.data);
                             observer.complete();
                         })
-                    .catch(() => {
+                    .catch((e) => {
                         // eslint-disable-next-line no-console
-                        console.log('ERROR');
+                        console.log(`ERROR ${e}`);
 
                         observer.error( 'serve error');
                     })
@@ -195,7 +195,7 @@
                     retryWhen(this.retryStrategy({attemts: 3, delay: 1500})),
 
                     // needs to be careFull!!!!
-                    catchError(val => of(`I caught: ${val}`))
+                    // catchError(val => of(`I caught: ${val}`))
                 )
             },
 
@@ -204,10 +204,15 @@
 
                     return errors
                         .pipe(
-                        scan((acc: number) => {
-                            return acc + 1;
+                        scan((acc: number, val: any) => {
+                            acc +=1;
+                            if (acc < attemts) {
+                                return acc;
+                            } else {
+                                throw new Error(val)
+                            }
                         }, 0),
-                        takeWhile((acc: number) => acc < attemts),
+                        // takeWhile((acc: number) => acc < attemts),
                         delay(delay2)
                         )
                 }
